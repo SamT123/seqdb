@@ -1,0 +1,28 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# seqdb
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+Some functions for working with Eugene's sequence databases and json tree format
+
+
+The package can be installed with:
+``` r
+# install.packages("seqdb")
+devtools::install_github("samt123/seqdb")
+```
