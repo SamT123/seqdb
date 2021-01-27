@@ -223,7 +223,6 @@ flatten_eutree = function(eutree){
   return(local_tree_vs)
 }
 
-
 #' Find match for a tree tip label in db
 #'@export
 match_tip_label = function(name, db, treedb){
@@ -239,9 +238,7 @@ match_tip_label = function(name, db, treedb){
 
 
   # match by name
-  base_name = stringr::str_split(name, '/')[[1]][2:4]
-  base_name[[3]] = stringr::str_split(base_name[[3]], '_')[[1]][[1]]
-  base_name_underscore = paste0(base_name, collapse =  '/')
+  base_name_underscore = get_basename_from_tiplabel(name)
   base_name = stringr::str_replace(base_name_underscore, '_', ' ')
 
   # get all viruses from db containing the root virus name
@@ -287,5 +284,60 @@ match_tip_label = function(name, db, treedb){
 
   warning('No match for: ', name)
   return(list(c = list('Clade missing')))
+
+}
+
+
+
+#'@export
+get_hashes_from_tiplabels = function(tree){
+  tree_hashes = lapply(tree$tip.label, function(name){
+    if (stringr::str_sub(name, -1,-1) != 'h' & (stringr::str_length(rev(stringr::str_split(name, 'h')[[1]])[[1]]) == 8)  ){
+      return(rev(stringr::str_split(name, 'h')[[1]])[[1]])
+    }
+    else return('missing')
+  })
+
+  tree_hashes
+}
+
+
+get_basename_from_tiplabel = function(tiplabel){
+  base_name = stringr::str_split(tiplabel, '/')[[1]][2:4]
+  base_name[[3]] = stringr::str_split(base_name[[3]], '_')[[1]][[1]]
+  base_name = paste0(base_name, collapse =  '/')
+
+  base_name
+}
+
+#'@export
+get_seqdata_from_tiplabels = function(tree, db, treedb){
+
+  tree_hashes = get_hashes_from_tiplabels(tree)
+
+  tree_seqdata = match_many_hashes(tree_hashes, db)
+
+  missings = lapply(tree$tip.label[sapply(tree_seqdata, function(y) !is.list(y) )], match_tip_label, db, treedb)
+  tree_seqdata[sapply(tree_seqdata, function(y) !is.list(y) )] =  missings
+
+  n_missing = sum(sapply(tree_seqdata, function(y) length(y)==1 ))
+  if (n_missing > 0){warning('No match for ', n_missing, ' viruses.')}
+
+  tree_seqdata
+
+}
+
+
+#############################
+#'@export
+ifexists <- function(path, expr){
+  if (file.exists(path)) return(readRDS(path))
+
+  else{
+    data = eval(expr)
+    saveRDS(data,path);
+    return(data)
+  }
+
 
 }
